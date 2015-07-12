@@ -1,5 +1,9 @@
-# Functions
-# /---------------------------------------------------------------------------\
+# guess_the_number.rb
+# By Luke A Chase
+# chase.luke.a@gmail.com
+# Copyright 2015
+
+# /-------------------------------FUNCTIONS-----------------------------------\
 def pc_speak(message)
   characters = message.split("")
   characters.each do |char|
@@ -13,15 +17,7 @@ def pc_speak(message)
 end
 
 def pc_prompt(question)
-  characters = question.split("")
-  characters.each do |char|
-    print char
-    if char =~ /\A[ |.|,|:|;]\Z/
-      sleep 0.08
-    else
-      sleep 0.02
-    end
-  end
+  pc_speak(question)
   gets.chop
 end
 
@@ -30,25 +26,23 @@ def prompt(question)
   gets.chop
 end
 
+# accepts input value and regular expression to check, returns true or false
 def valid_input(input, regex)
   !!(input =~ regex)
 end
 
 def check_answer(guessed_number, actual_number)
   if guessed_number == actual_number
-    return true
+    return 0 # won
+  elsif guessed_number < actual_number
+    return 1 # low
   else
-    if guessed_number < actual_number
-      pc_speak "$ Too low. Guess again.\n"
-    else
-      pc_speak "$ Too high. Guess again.\n"
-    end
-    return false
+    return 2 # high
   end
 end
 
 def game_won_message(guess_total)
-  message = "$ You guessed my number in #{guess_total} "
+  message = "\n$ You guessed my number in #{guess_total} "
 
   if guess_total == 1
     message += "guess"
@@ -67,9 +61,9 @@ def game_won_message(guess_total)
     message += "... I'm sorry, better luck next time."
   end
 end
-
 # \---------------------------------------------------------------------------/
 
+# /----------------------------------MAIN-------------------------------------\
 # Global declarations
 play_game = false
 difficulty = [10, 100, 1000]
@@ -82,7 +76,6 @@ sleep 0.25
 play_game = true if prompt("\('y' or 'n'\):\n> ") =~ /\A[y|Y]\Z/
 
 while play_game do
-
   # New game declarations
   number_of_guesses = 0
   game_won = false
@@ -99,11 +92,10 @@ while play_game do
   begin
     difficulty_level = pc_prompt "$ Choose a difficulty level => 1, 2, or 3:\n> "
   end while !valid_input(difficulty_level, /\A[1|2|3]\Z/)
-
   difficulty_level = difficulty[difficulty_level.to_i-1]
+
   pc_speak "\n$ OK. I'll think of a number from 1 to #{difficulty_level}\n\n"
   pc_speak "    Thinking"
-
   8.times do
     print "."
     sleep 0.25
@@ -115,22 +107,28 @@ while play_game do
   while !game_won do
     guessed_number = prompt "> Enter guess: "
     number_of_guesses += 1
-    puts
 
     if valid_input(guessed_number, /\A[0-9]+\Z/)
-      game_won = check_answer(guessed_number.to_i, actual_number.to_i)
+      case check_answer(guessed_number.to_i, actual_number.to_i)
+      when 0 # won
+        game_won = true
+      when 1 # low
+        pc_speak "\n$ Too low. Guess again.\n"
+      when 2 # high
+        pc_speak "\n$ Too high. Guess again.\n"
+      end
     else
-      pc_speak "$ I'm sorry, you must enter a valid integer. Please try again."
+      pc_speak "\n$ I'm sorry, you must enter a valid integer. Please try again."
     end
-
   end
 
   pc_speak "#{game_won_message(number_of_guesses)}\n\n"
 
-  play_game = false if pc_prompt("$ Would you like to play another game?\n> ") =~ /\A[n|N]\Z/
+  pc_speak "$ Would you like to play another game? "
+  play_game = false if prompt("\('y' or 'n'\):\n> ") =~ /\A[n|N]\Z/
 end
 
 pc_speak "\n$ Thank you. I enjoyed our interaction.\n"
 sleep 0.50
 pc_speak "\n$ Goodbye.\n\n"
-
+# \---------------------------------------------------------------------------/
