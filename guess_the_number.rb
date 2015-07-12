@@ -1,5 +1,29 @@
 # Functions
 # /---------------------------------------------------------------------------\
+def pc_speak(message)
+  characters = message.split("")
+  characters.each do |char|
+    print char
+    if char =~ /\A[ |.|,|:|;]\Z/
+      sleep 0.08
+    else
+      sleep 0.02
+    end
+  end
+end
+
+def pc_prompt(question)
+  characters = question.split("")
+  characters.each do |char|
+    print char
+    if char =~ /\A[ |.|,|:|;]\Z/
+      sleep 0.08
+    else
+      sleep 0.02
+    end
+  end
+  gets.chop
+end
 
 def prompt(question)
   print question
@@ -15,85 +39,98 @@ def check_answer(guessed_number, actual_number)
     return true
   else
     if guessed_number < actual_number
-      puts "Too low. Guess again: "
+      pc_speak "$ Too low. Guess again.\n"
     else
-      puts "Too high. Guess again: "
+      pc_speak "$ Too high. Guess again.\n"
     end
     return false
   end
 end
 
 def game_won_message(guess_total)
-  message = "You got it in #{guess_total} "
+  message = "$ You guessed my number in #{guess_total} "
 
   if guess_total == 1
-    message += "guess! "
+    message += "guess"
   else
-    message += "guesses! "
+    message += "guesses"
   end
 
   case guess_total
   when 1
-    message += "You're a mind reader!"
+    message += "! You're a mind reader!"
   when 2, 3, 4
-    message += "Most impressive."
+    message += "! That is most impressive."
   when 5, 6
-    message += "You can do better than that."
+    message += ". You can do better than that."
   else
-    message += "Better luck next time."
+    message += "... I'm sorry, better luck next time."
   end
 end
 
-
-
-
-
 # \---------------------------------------------------------------------------/
 
-keep_playing = true
+# Global declarations
+play_game = false
 difficulty = [10, 100, 1000]
 
-puts ".-------------------------------------------------------."
-puts "|              Lets Play Guess The Number               |"
-puts "'-------------------------------------------------------'\n"
+# Welcome, Chip ;)
+pc_speak "\n$ Hi, I'm Chip. ;)\n\n"
+sleep 0.50
+pc_speak "$ Would you like to play a game? "
+sleep 0.25
+play_game = true if prompt("\('y' or 'n'\):\n> ") =~ /\A[y|Y]\Z/
 
-while keep_playing do
+while play_game do
 
-  # Each turn variables
+  # New game declarations
   number_of_guesses = 0
   game_won = false
 
+  game = pc_prompt "\n$ What game would you like to play?\n> "
+
+  if game == "guess the number"
+    pc_speak "\n$ Oh, I know that one! Lets play! =)\n\n"
+  else
+    pc_speak "\n$ I'm sorry, I don't know \"#{game}.\"\n\n"
+    pc_speak "$ Lets play \"guess the number\" instead. :)\n\n"
+  end
+
   begin
-    difficulty_level = prompt "\nPick a difficulty level (1, 2, or 3): "
+    difficulty_level = pc_prompt "$ Choose a difficulty level => 1, 2, or 3:\n> "
   end while !valid_input(difficulty_level, /\A[1|2|3]\Z/)
 
   difficulty_level = difficulty[difficulty_level.to_i-1]
-  puts "Difficulty level: 1 to #{difficulty_level}\n\n"
-  print "  Thinking"
+  pc_speak "\n$ OK. I'll think of a number from 1 to #{difficulty_level}\n\n"
+  pc_speak "    Thinking"
 
-  9.times do
+  8.times do
     print "."
     sleep 0.25
   end
 
   actual_number = 1 + rand(difficulty_level)
-  puts "\n\nOk I have a number in mind. What is your guess?\n"
+  pc_speak "\n\n$ Ok, I have a number in mind. What is your guess?\n"
 
   while !game_won do
-    guessed_number = prompt "Enter guess: "
+    guessed_number = prompt "> Enter guess: "
     number_of_guesses += 1
     puts
 
     if valid_input(guessed_number, /\A[0-9]+\Z/)
       game_won = check_answer(guessed_number.to_i, actual_number.to_i)
     else
-      puts "* You must enter a valid integer. Try again. *"
+      pc_speak "$ I'm sorry, you must enter a valid integer. Please try again."
     end
 
   end
 
-  puts "#{game_won_message(number_of_guesses)}\n\n"
+  pc_speak "#{game_won_message(number_of_guesses)}\n\n"
 
-  keep_playing = false if prompt("Play again? ") =~ /\A[n|N]\Z/
+  play_game = false if pc_prompt("$ Would you like to play another game?\n> ") =~ /\A[n|N]\Z/
 end
+
+pc_speak "\n$ Thank you. I enjoyed our interaction.\n"
+sleep 0.50
+pc_speak "\n$ Goodbye.\n\n"
 
